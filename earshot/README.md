@@ -1,52 +1,70 @@
 # Earshot
 
-A single-file web app that uses AirPods (or any earbuds) to blunt the pain of an
-injection, built around what the literature actually supports.
+A single-file web app: a listening memory game for your earbuds that uses up the
+attention pain would otherwise take. Use it during a shot, or check first whether
+it works on you with a 15-minute ice-water test.
 
-Open `index.html` on a phone, put the buds in, keep Transparency on.
+Open `index.html` on a phone, put your AirPods in, and keep Transparency on.
 
-## What it does
+## How it works
 
-| Phase | Length | What happens |
-| --- | --- | --- |
-| Fit & threshold | — | L/R check, then a 1 kHz tone you turn *down* until it nearly vanishes into the room. Sets the working level. |
-| Prime | 60s | Brown-noise bed, 4-in/6-out breath pacing, optional 10 Hz binaural pair. Runs before the needle is near you. |
-| Load | open-ended | An adaptive auditory vigilance task — tap on the higher pip. Difficulty tightens as you get better, so attention stays fully committed. |
-| The moment | 25s | Triggered by you or the clinician. Long exhale cue, flutter depth and tremolo rate peak, pip rate speeds up. |
-| Score it | — | 0–10 pain and distraction ratings saved to `localStorage`. |
+The game is an audio **2-back**. Four notes (low, mid, high, top), spread apart in
+pitch and in stereo position, play one at a time. Tap anywhere on the screen when a
+note matches the one two notes back. It starts with a 1-back warm-up, then:
 
-## The design decisions that came from evidence, not vibes
+- speeds up (to one note every 1.5 s) when you catch at least 75% of matches with
+  few wrong taps;
+- slows down (to one every 2.8 s) when you're missing a lot;
+- drops back to 1-back only if slowing down isn't enough, and returns to 2-back
+  once you recover.
 
-- **Quiet on purpose.** Sound blunted pain in mice only at ~5 dB above ambient;
-  louder did nothing ([Science, 2022](https://www.science.org/doi/10.1126/science.abn4663)).
-  Hence threshold calibration and a hard `-12 dBFS` output cap, plus optional
-  mic-based tracking that lifts the signal by at most 8 dB in a noisy room.
-- **Active, not passive.** Distraction that consumes attention outperforms
-  background media in needle-procedure trials, which is why there is a scored
-  task rather than a playlist.
-- **Prime before, not just during.** The one consistent finding in the binaural
-  beats literature is that pre-exposure beats exposure-during-only.
-- **Flutter is attention, not gate control.** 40–110 Hz in a sealed canal reads
-  as a tickle. It does *not* close the spinal gate for a needle in your arm —
-  that gate is segmental, which is why the Buzzy device sits on the skin next to
-  the needle. No shipping AirPod has a haptic motor.
-- **Blinded n-of-1 by default.** Each run silently picks one of four builds
-  (everything / task only / flutter only / bed only) and reveals it after you
-  rate the pain. Over ~10 runs the per-build averages say whether any of it is
-  doing something for you, rather than asking you to trust a mechanism story.
+The notes are deliberately easy to tell apart, so the work is in remembering, not
+hearing. The whole screen is the answer button, so you can play with your eyes shut.
 
-## Implementation
+## Three ways to use it
 
-No dependencies, no network, no assets. Everything is synthesised at runtime with
-the Web Audio API: brown/pink noise buffers, an AM'd low sine pair for flutter
-with a slow inter-aural walk, bandpass noise swells for the breath, panned
-triangle pips for the task. Ratings live in `localStorage` under
-`earshot.log.v1`; nothing leaves the device, including the mic stream.
+| Mode | What happens |
+| --- | --- |
+| Practice | Learn the game. Nothing is saved. |
+| Ice test | Two rounds with a hand in ice water: one playing, one silent, in random order. Logs seconds held (2-minute cap) and worst pain 0–10 for each, with a rest between rounds. |
+| Shot | Game plus optional quiet background (brown noise and a 55 Hz ear flutter). Tap **Needle now** when it happens; the game runs 30 s more, then asks for a pain rating. |
+
+History is stored in `localStorage` under `earshot.log.v2`. Nothing leaves the device.
+
+## Why v2 replaced v1
+
+v1 felt like nothing, for four reasons:
+
+1. **It was close to inaudible.** The volume was designed to sit "barely above the
+   room" and then went through an extra −12 dB cap, so the task tones played at
+   about −50 dBFS.
+2. **iPhone's silent switch muted it.** Web Audio plays through iOS's ambient
+   channel, which the ring switch silences. v2 sets
+   `navigator.audioSession.type = "playback"` and keeps a looping silent `<audio>`
+   element as a fallback for older iOS.
+3. **The task was the wrong kind.** "Tap on the higher pip" mostly tests hearing,
+   not memory. The evidence is for working-memory load (n-back), so v2 uses that.
+4. **Half the runs were designed to do nothing.** Blind mode picked one of four
+   setups at random, and two of them were noise-only control conditions.
+
+On top of that, there's no way to feel an effect without pain to compare against,
+which is what the ice test is for.
+
+## What to expect
+
+A modest effect, not numbness. In lab studies, 1-back and 2-back tasks lowered
+perceived intensity of cold and painful stimuli, harder levels helped more up to a
+ceiling, and the effect showed up in the spinal cord's response. Pain ratings fall
+more reliably than endurance does. Sound on its own, without a task, mostly changes
+unpleasantness rather than intensity.
+
+Earbuds can't numb the needle site. Vibration and cold work only near the jab, so
+for the sting itself, add ice on the spot beforehand, or a vibrating device held
+a few centimetres above it (with the nurse's OK).
 
 ## Not a medical device
 
-A distraction aid, not a treatment, with no diagnostic or therapeutic claim.
-Expect a modest effect on top of the things that actually work — topical
-anaesthetic, a good injector, breathing out on insertion. Skip it if you need to
-hear instructions during a procedure, or if you have hyperacusis or
-noise-triggered tinnitus.
+A distraction aid built from published research. It makes no diagnostic or
+treatment claim. Skip the ice test if you have heart problems, high blood pressure,
+Raynaud's, circulation problems or diabetes-related nerve damage, or if you're
+pregnant.

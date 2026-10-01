@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="An AirPods-based attentional shield for injections: calibrated quiet audio, ear flutter, a listening task, and a blinded personal log.">
+<meta name="description" content="A listening memory game for your earbuds that takes up the attention pain would use. Use it during a shot, or test it on yourself with ice water first.">
 <meta name="color-scheme" content="dark light">
 </head>
 <body>
-<title>Earshot — attentional shield for needle procedures</title>
+<title>Earshot — a listening game for needles</title>
 
 <style>
   :root {
@@ -19,10 +19,10 @@
     --text:       #E4EBE9;
     --text-dim:   #90A5A6;
     --text-faint: #5E7375;
-    --signal:     #E9A13B;   /* the one bold thing: target / needle moment */
+    --signal:     #E9A13B;   /* the one bold thing: actions, the needle moment */
     --on-signal:  #11181A;
-    --aqua:       #4FB2A6;   /* breath, ambient, ok-state */
-    --alert:      #D96343;
+    --aqua:       #4FB2A6;   /* correct, calm, ok-state */
+    --alert:      #D96343;   /* wrong tap, safety */
     --shadow:     0 1px 0 rgba(255,255,255,.04), 0 10px 30px -18px rgba(0,0,0,.9);
     --ground:     var(--ink);
     --panel:      var(--ink-2);
@@ -34,14 +34,14 @@
   }
 
   @media (prefers-color-scheme: light) {
-    :root {
+    :root:not([data-theme="dark"]) {
       --ground:     #EBEEEC;
       --panel:      #F6F8F6;
       --panel-2:    #E2E7E4;
       --line:       #C6D0CC;
       --text:       #16211F;
       --text-dim:   #4E605E;
-      --text-faint: #7A8D8A;
+      --text-faint: #6F827F;
       --signal:     #A9621A;
       --on-signal:  #FFF8EF;
       --aqua:       #1F7A70;
@@ -51,7 +51,7 @@
   }
   :root[data-theme="light"] {
     --ground:#EBEEEC; --panel:#F6F8F6; --panel-2:#E2E7E4; --line:#C6D0CC;
-    --text:#16211F; --text-dim:#4E605E; --text-faint:#7A8D8A;
+    --text:#16211F; --text-dim:#4E605E; --text-faint:#6F827F;
     --signal:#A9621A; --on-signal:#FFF8EF; --aqua:#1F7A70; --alert:#B0402A;
     --shadow:0 1px 0 rgba(255,255,255,.7), 0 10px 26px -20px rgba(20,40,38,.45);
   }
@@ -73,11 +73,10 @@
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 40rem; margin: 0 auto; padding: 1.25rem 1.15rem 4rem; }
+  .wrap { max-width: 44rem; margin: 0 auto; padding: 1.25rem 1rem 4rem; }
 
   h1, h2, h3 { text-wrap: balance; margin: 0; }
   h1 {
-    font-family: var(--sans);
     font-size: clamp(1.9rem, 7vw, 2.6rem);
     font-weight: 680;
     letter-spacing: -.03em;
@@ -86,6 +85,9 @@
   h2 { font-size: 1.1rem; font-weight: 650; letter-spacing: -.015em; }
   h3 { font-size: .95rem; font-weight: 640; }
   p { margin: 0; }
+  ol, ul { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: .3rem; }
+  li { font-size: .9rem; color: var(--text-dim); }
+  li strong { color: var(--text); font-weight: 620; }
 
   .eyebrow {
     font-family: var(--mono);
@@ -96,69 +98,18 @@
   }
   .lede {
     font-family: var(--serif);
-    font-size: 1.06rem;
+    font-size: 1.08rem;
     line-height: 1.5;
     color: var(--text-dim);
-    max-width: 32ch;
+    max-width: 34ch;
   }
 
-  header { padding: .5rem 0 1.4rem; display: flex; flex-direction: column; gap: .7rem; }
+  header { padding: .5rem 0 1.5rem; display: flex; flex-direction: column; gap: .7rem; }
   .brandrow { display: flex; align-items: baseline; gap: .6rem; }
   .brandrow .ver { font-family: var(--mono); font-size: .7rem; color: var(--text-faint); }
 
-  /* ---- instrument strip ---- */
-  .instrument {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-  }
-  .instrument canvas { display: block; width: 100%; height: 96px; }
-  .instrument .readout {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    border-top: 1px solid var(--line);
-    font-family: var(--mono);
-    font-size: .72rem;
-  }
-  .instrument .readout div {
-    padding: .45rem .6rem;
-    border-right: 1px solid var(--line);
-    color: var(--text-dim);
-    display: flex; justify-content: space-between; gap: .4rem;
-    font-variant-numeric: tabular-nums;
-  }
-  .instrument .readout div:last-child { border-right: 0; }
-  .instrument .readout b { color: var(--text); font-weight: 600; }
-
-  /* ---- phase rail: a real sequence in time, so it is numbered ---- */
-  .rail { display: flex; flex-direction: column; margin: 1.4rem 0 0; }
-  .step {
-    display: grid;
-    grid-template-columns: 2.2rem 1fr;
-    gap: .9rem;
-    padding: .85rem 0;
-    border-top: 1px solid var(--line);
-    opacity: .45;
-    transition: opacity .35s ease;
-  }
-  .step:last-child { border-bottom: 1px solid var(--line); }
-  .step[data-state="active"] { opacity: 1; }
-  .step[data-state="done"] { opacity: .7; }
-  .step .num {
-    font-family: var(--mono); font-size: .72rem; color: var(--text-faint);
-    padding-top: .2rem; font-variant-numeric: tabular-nums;
-  }
-  .step[data-state="active"] .num { color: var(--signal); }
-  .step[data-state="done"] .num { color: var(--aqua); }
-  .step .body { display: flex; flex-direction: column; gap: .3rem; }
-  .step .title { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-  .step .t { font-weight: 620; font-size: .95rem; letter-spacing: -.01em; }
-  .step .clock { font-family: var(--mono); font-size: .72rem; color: var(--text-faint); font-variant-numeric: tabular-nums; }
-  .step .d { font-size: .86rem; color: var(--text-dim); }
-
-  /* ---- controls ---- */
+  /* ---- cards & controls ---- */
+  .stack { display: flex; flex-direction: column; gap: 1.1rem; }
   .card {
     background: var(--panel);
     border: 1px solid var(--line);
@@ -167,7 +118,11 @@
     display: flex; flex-direction: column; gap: .85rem;
     box-shadow: var(--shadow);
   }
-  .stack { display: flex; flex-direction: column; gap: 1.1rem; margin-top: 1.5rem; }
+  .card > p { font-size: .9rem; color: var(--text-dim); }
+  .modes { display: grid; grid-template-columns: 1fr; gap: 1.1rem; }
+  @media (min-width: 640px) { .modes { grid-template-columns: 1fr 1fr; } }
+  .modes .card { justify-content: space-between; }
+  .modes .card .top { display: flex; flex-direction: column; gap: .7rem; }
 
   button {
     font-family: var(--sans); font-size: 1rem; font-weight: 600;
@@ -204,39 +159,75 @@
     text-transform: uppercase; color: var(--text-faint);
   }
   .slider-row .lab b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0; }
+  .note { font-size: .8rem; color: var(--text-faint); }
+  .warn { font-size: .8rem; color: var(--text-dim); border-left: 2px solid var(--alert); padding-left: .6rem; }
 
-  /* ---- the moment ---- */
-  #tapzone {
+  /* ---- the rule, drawn as a note sequence ---- */
+  .example { display: flex; gap: .35rem; align-items: flex-end; overflow-x: auto; padding: .2rem 0 .1rem; }
+  .ex {
+    flex: 0 0 auto; width: 2.7rem;
+    display: flex; flex-direction: column; align-items: center; gap: .3rem;
+    font-family: var(--mono); font-size: .62rem; color: var(--text-faint);
+  }
+  .ex .bar { width: 100%; border-radius: 2px; background: var(--panel-2); border: 1px solid var(--line); }
+  .ex[data-h="1"] .bar { height: .7rem; }
+  .ex[data-h="2"] .bar { height: 1.3rem; }
+  .ex[data-h="3"] .bar { height: 1.9rem; }
+  .ex[data-h="4"] .bar { height: 2.5rem; }
+  .ex b { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--signal); margin-top: -.15rem; }
+  .ex.tap .bar { background: var(--signal); border-color: var(--signal); }
+
+  /* ---- full-screen play view ---- */
+  #play {
     position: fixed; inset: 0; z-index: 40;
     background: var(--ground);
     display: none; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 1.2rem; padding: 1.5rem; text-align: center;
+    gap: 1.1rem; padding: 1.5rem 1.25rem 6.5rem; text-align: center;
     -webkit-tap-highlight-color: transparent;
-    user-select: none;
+    user-select: none; -webkit-user-select: none;
+    touch-action: manipulation;
   }
-  #tapzone.on { display: flex; }
-  #tapzone .phaselabel {
+  #play.on { display: flex; }
+  #play .phaselabel {
     font-family: var(--mono); font-size: .7rem; letter-spacing: .18em;
     text-transform: uppercase; color: var(--text-faint);
   }
-  #tapzone .cue { font-family: var(--serif); font-size: clamp(1.6rem, 9vw, 2.4rem); line-height: 1.1; }
-  #tapzone .hint { font-size: .85rem; color: var(--text-dim); max-width: 24ch; }
-  #ring { width: min(58vw, 230px); aspect-ratio: 1; }
-  #tapzone .score {
+  #play .cue { font-family: var(--serif); font-size: clamp(1.6rem, 8.5vw, 2.4rem); line-height: 1.12; max-width: 16ch; }
+  #play .hint { font-size: .9rem; color: var(--text-dim); max-width: 28ch; }
+  #ring { width: min(52vw, 210px); aspect-ratio: 1; }
+  #ring circle { transition: stroke .12s ease, fill .12s ease; }
+  #play .score {
     font-family: var(--mono); font-size: .74rem; color: var(--text-faint);
-    font-variant-numeric: tabular-nums; letter-spacing: .06em;
+    font-variant-numeric: tabular-nums; letter-spacing: .04em; min-height: 1.2em;
   }
-  #tapzone .zonebtns { position: fixed; bottom: 1.1rem; left: 1.1rem; right: 1.1rem; display: flex; gap: .6rem; }
-  #tapzone .zonebtns > * { flex: 1; }
-  .flashpad { position: fixed; inset: 0; pointer-events: none; opacity: 0; background: var(--signal); }
+  #play .clock {
+    font-family: var(--mono); font-size: clamp(2.2rem, 12vw, 3.2rem); font-weight: 600;
+    font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: var(--text);
+  }
+  #play .zonebtns {
+    position: fixed; bottom: 1rem; left: 1rem; right: 1rem;
+    display: flex; gap: .6rem; max-width: 40rem; margin: 0 auto;
+  }
+  #play .zonebtns > * { flex: 1; }
+  #play .rate { width: min(100%, 22rem); display: flex; flex-direction: column; gap: .8rem; text-align: left; }
+  .edge { position: fixed; inset: 0; pointer-events: none; opacity: 0; box-shadow: inset 0 0 0 6px var(--alert); }
 
-  /* ---- log ---- */
+  /* ---- results ---- */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }
+  .compare > div { padding: .8rem; display: flex; flex-direction: column; gap: .25rem; }
+  .compare > div + div { border-left: 1px solid var(--line); }
+  .compare .k { font-family: var(--mono); font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint); }
+  .compare .big { font-family: var(--mono); font-size: 1.6rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .compare .sm { font-size: .82rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .compare .win .big { color: var(--aqua); }
+  .verdict { font-family: var(--serif); font-size: 1.05rem; line-height: 1.45; }
+
   table { width: 100%; border-collapse: collapse; font-size: .84rem; }
-  th, td { text-align: left; padding: .4rem .5rem; border-bottom: 1px solid var(--line); }
-  th { font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); font-weight: 500; }
+  th, td { text-align: left; padding: .4rem .5rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-family: var(--mono); font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); font-weight: 500; }
   td { font-variant-numeric: tabular-nums; color: var(--text-dim); }
-  td:first-child, td.n { color: var(--text); }
+  td:first-child { color: var(--text); }
   .scroller { overflow-x: auto; }
   .pill {
     display: inline-block; font-family: var(--mono); font-size: .66rem;
@@ -246,19 +237,12 @@
   .pill.hot { border-color: var(--signal); color: var(--signal); }
   .pill.cool { border-color: var(--aqua); color: var(--aqua); }
 
-  .bars { display: flex; flex-direction: column; gap: .45rem; }
-  .bar { display: grid; grid-template-columns: 6.5rem 1fr 2.2rem; gap: .6rem; align-items: center; font-size: .82rem; }
-  .bar .track { display: block; height: 8px; background: var(--panel-2); border-radius: 2px; overflow: hidden; }
-  .bar .fill { display: block; height: 8px; background: var(--aqua); }
-  .bar .v { font-family: var(--mono); font-size: .78rem; text-align: right; font-variant-numeric: tabular-nums; }
-
   /* ---- evidence ---- */
   .evidence { margin-top: 2.6rem; display: flex; flex-direction: column; gap: 1.1rem; }
   .claim { display: flex; flex-direction: column; gap: .35rem; padding-top: .9rem; border-top: 1px solid var(--line); }
   .claim .hd { display: flex; align-items: baseline; gap: .55rem; flex-wrap: wrap; }
-  .claim p { font-size: .88rem; color: var(--text-dim); }
+  .claim p { font-size: .88rem; color: var(--text-dim); max-width: 65ch; }
   a { color: var(--aqua); text-decoration-thickness: 1px; text-underline-offset: 2px; }
-  .note { font-size: .8rem; color: var(--text-faint); }
   footer { margin-top: 2.4rem; padding-top: 1rem; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: .6rem; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -270,948 +254,735 @@
   <header>
     <div class="brandrow">
       <h1>Earshot</h1>
-      <span class="ver">v1 · audio only</span>
+      <span class="ver">v2 · a listening game</span>
     </div>
-    <p class="lede">Your ears already have a speaker in them. This spends the ninety seconds around a needle loading up your attention so there is less of it left over for the pain.</p>
+    <p class="lede">A memory game played entirely by ear, hard enough to use up the attention that pain would otherwise take. Start it a minute before the needle and keep playing through it.</p>
   </header>
-
-  <div class="instrument" aria-hidden="true">
-    <canvas id="scope" width="720" height="192"></canvas>
-    <div class="readout">
-      <div><span>level</span><b id="ro-level">—</b></div>
-      <div><span>flutter</span><b id="ro-flutter">—</b></div>
-      <div><span>room</span><b id="ro-room">off</b></div>
-    </div>
-  </div>
-
-  <div class="rail" id="rail">
-    <div class="step" data-step="setup" data-state="active">
-      <div class="num">01</div>
-      <div class="body">
-        <div class="title"><span class="t">Fit &amp; threshold</span><span class="clock" id="clk-setup"></span></div>
-        <div class="d">Check both buds, then set the working level to <em>barely audible</em> — quiet is the point, not loud.</div>
-      </div>
-    </div>
-    <div class="step" data-step="prime">
-      <div class="num">02</div>
-      <div class="body">
-        <div class="title"><span class="t">Prime</span><span class="clock" id="clk-prime">60s</span></div>
-        <div class="d">Paced breathing and a low bed of noise before the needle is anywhere near you.</div>
-      </div>
-    </div>
-    <div class="step" data-step="load">
-      <div class="num">03</div>
-      <div class="body">
-        <div class="title"><span class="t">Load</span><span class="clock" id="clk-load">20s</span></div>
-        <div class="d">The listening task starts. Tap every time you hear the higher pip.</div>
-      </div>
-    </div>
-    <div class="step" data-step="moment">
-      <div class="num">04</div>
-      <div class="body">
-        <div class="title"><span class="t">The moment</span><span class="clock" id="clk-moment">25s</span></div>
-        <div class="d">You (or the nurse) hit the button as the needle goes in. Long exhale, hardest pips, deepest flutter.</div>
-      </div>
-    </div>
-    <div class="step" data-step="debrief">
-      <div class="num">05</div>
-      <div class="body">
-        <div class="title"><span class="t">Score it</span></div>
-        <div class="d">Rate the pain 0–10. That is the only way to find out whether any of this works <em>for you</em>.</div>
-      </div>
-    </div>
-  </div>
 
   <div class="stack">
     <!-- SETUP -->
     <section class="card" id="panel-setup">
-      <div class="eyebrow">01 · fit &amp; threshold</div>
+      <div class="eyebrow">first time · learn the game</div>
+      <h2>Tap when a note matches the one two notes back</h2>
+      <p>You will hear four notes: low, mid, high and top. Ignore the note right before. Compare each new note with the one <em>two</em> back, and tap anywhere on the screen if they match.</p>
+      <div class="example" aria-label="Example: low, top, low (tap), mid, low (tap), mid (tap)">
+        <div class="ex" data-h="1"><span class="bar"></span>low<b>&nbsp;</b></div>
+        <div class="ex" data-h="4"><span class="bar"></span>top<b>&nbsp;</b></div>
+        <div class="ex tap" data-h="1"><span class="bar"></span>low<b>tap</b></div>
+        <div class="ex" data-h="2"><span class="bar"></span>mid<b>&nbsp;</b></div>
+        <div class="ex tap" data-h="1"><span class="bar"></span>low<b>tap</b></div>
+        <div class="ex tap" data-h="2"><span class="bar"></span>mid<b>tap</b></div>
+      </div>
+      <p class="note">It starts with an easier warm-up (match the note right before), then switches. If you keep missing, it slows down; if you get good, it speeds up. It's meant to be hard. That's the whole idea.</p>
+
       <div class="btn-row">
-        <button id="btn-left" class="btn-ghost">Test left</button>
-        <button id="btn-right" class="btn-ghost">Test right</button>
+        <button id="btn-left" class="btn-ghost">Test left ear</button>
+        <button id="btn-right" class="btn-ghost">Test right ear</button>
       </div>
       <div class="slider-row">
-        <div class="lab"><span>Working level</span><b id="lv-val">−34 dB</b></div>
-        <input type="range" id="lv" min="-60" max="-14" value="-34" step="1" aria-label="Working level">
-        <div class="note" id="lv-note">Hold the calibration tone and slide down until it almost disappears into the room. Then come up one notch. Sound helped most in the lab when it sat just <em>5 dB</em> above the background — loud did nothing.</div>
-      </div>
-      <div class="btn-row">
-        <button id="btn-cal" class="btn-ghost">Hold calibration tone</button>
+        <div class="lab"><span>Volume</span><b id="vol-val">—</b></div>
+        <input type="range" id="vol" min="-36" max="-6" value="-18" step="1" aria-label="Game volume">
+        <div class="note">Set your phone volume to about halfway, then slide this until the test notes are clear and comfortable, not loud. If you hear nothing at all, see the fix below.</div>
       </div>
       <label class="row">
-        <span>Track the room<span class="sub">Uses the mic to keep the signal just above ambient noise. Nothing is recorded or sent.</span></span>
-        <input type="checkbox" id="opt-room">
+        <span>Background hum<span class="sub">A quiet noise bed and low ear flutter under the notes, which also masks room noise. Only used during a shot, never in the ice test.</span></span>
+        <input type="checkbox" id="opt-bg" checked>
       </label>
-      <div class="slider-row">
-        <div class="lab"><span>Flutter pitch</span><b id="fl-val">55 Hz</b></div>
-        <input type="range" id="fl" min="35" max="110" value="55" step="1" aria-label="Flutter pitch">
-        <div class="note">Low enough to feel as a buzz in the ear canal rather than hear as a note. Sealed tips make it much stronger; find the pitch your buds actually shake at.</div>
-      </div>
-      <label class="row">
-        <span>Blind run<span class="sub">Silently picks one of four builds and hides which. Over ~10 runs the log tells you which one is really doing something.</span></span>
-        <input type="checkbox" id="opt-blind" checked>
-      </label>
-      <div id="mode-manual" style="display:none">
-        <div class="eyebrow" style="margin-bottom:.5rem">build</div>
-        <div class="btn-row" id="mode-btns">
-          <button class="btn-ghost" data-mode="full">Everything</button>
-          <button class="btn-ghost" data-mode="task">Task only</button>
-          <button class="btn-ghost" data-mode="flutter">Flutter only</button>
-          <button class="btn-ghost" data-mode="bed">Bed only</button>
-        </div>
-      </div>
-      <button id="btn-start" class="btn-primary">Start the run</button>
-      <p class="note">Keep Transparency on so you can still hear your clinician. Volume stays low by design — this app caps its own output, but set your device volume before you start, not during.</p>
+      <button id="btn-practice" class="btn-ghost">Practise for a minute</button>
+      <p class="note"><strong>No sound on iPhone?</strong> This version is built to play even with the silent switch on. If it's still quiet, check that your AirPods are connected and that nothing else is playing.</p>
     </section>
 
-    <!-- DEBRIEF -->
-    <section class="card" id="panel-debrief" style="display:none">
-      <div class="eyebrow">05 · score it</div>
-      <h2>How much did that hurt?</h2>
-      <div class="slider-row">
-        <div class="lab"><span>0 none — 10 worst imaginable</span><b id="pn-val">3</b></div>
-        <input type="range" id="pn" min="0" max="10" value="3" step="1" aria-label="Pain rating">
-      </div>
-      <div class="slider-row">
-        <div class="lab"><span>How distracted were you?</span><b id="ds-val">3</b></div>
-        <input type="range" id="ds" min="0" max="10" value="3" step="1" aria-label="Distraction rating">
-      </div>
-      <div id="reveal" class="note"></div>
-      <div class="btn-row">
-        <button id="btn-save" class="btn-primary">Save to log</button>
-        <button id="btn-discard" class="btn-ghost">Discard</button>
-      </div>
+    <div class="modes">
+      <!-- ICE TEST -->
+      <section class="card">
+        <div class="top">
+          <div class="eyebrow">do this first · 15 minutes</div>
+          <h2>Check if it works on you</h2>
+          <p class="note">You won't feel anything just listening. With no pain around, there's nothing for the game to take attention away from. So test it on pain you control: ice water.</p>
+          <ol>
+            <li>Fill a bowl with <strong>lots of ice</strong> and water. Wait 2 minutes.</li>
+            <li><strong>Two rounds</strong>, hand in up to the wrist: one playing the game, one in silence. The app picks the order.</li>
+            <li>Pull your hand out <strong>whenever you want</strong>. It stops you at 2 minutes.</li>
+            <li>About <strong>5 minutes' rest</strong> between rounds, so your hand warms back up.</li>
+          </ol>
+          <p class="warn">Skip this if you have heart problems, high blood pressure, Raynaud's, circulation problems or diabetes-related nerve damage, or if you're pregnant.</p>
+        </div>
+        <button id="btn-ice" class="btn-primary">Start the ice test</button>
+      </section>
+
+      <!-- SHOT -->
+      <section class="card">
+        <div class="top">
+          <div class="eyebrow">the real thing</div>
+          <h2>Getting a shot</h2>
+          <ol>
+            <li><strong>Start a minute early</strong>, while you wait. The game needs time to pull you in.</li>
+            <li>Tell the nurse you're playing a game and will keep your earbuds in. Transparency mode on.</li>
+            <li><strong>Don't watch the needle.</strong> Looking at the spot makes it hurt more.</li>
+            <li>Tap <strong>Needle now</strong> when it happens (or ask the nurse to). Keep playing 30 more seconds.</li>
+          </ol>
+          <p class="note">For the sting itself, add something at the arm: ice on the spot for a minute beforehand, or an electric toothbrush held against the arm a few centimetres <em>above</em> the spot. Never on it, and ask the nurse first.</p>
+        </div>
+        <button id="btn-shot" class="btn-primary">Start shot mode</button>
+      </section>
+    </div>
+
+    <!-- RESULTS -->
+    <section class="card" id="panel-result" style="display:none">
+      <div class="eyebrow">ice test result</div>
+      <div class="compare" id="cmp"></div>
+      <p class="verdict" id="verdict"></p>
+      <p class="note" id="verdict-note"></p>
     </section>
 
     <!-- LOG -->
     <section class="card" id="panel-log" style="display:none">
-      <div class="eyebrow">your own trial</div>
-      <h2 id="log-h">Runs so far</h2>
-      <div class="bars" id="log-bars"></div>
+      <div class="eyebrow">your history</div>
+      <h2 id="log-h">Your runs</h2>
       <div class="scroller"><table id="log-table"></table></div>
       <p class="note" id="log-note"></p>
-      <div class="btn-row"><button id="btn-clear" class="btn-ghost">Clear log</button></div>
+      <div class="btn-row"><button id="btn-clear" class="btn-ghost">Clear history</button></div>
     </section>
   </div>
 
   <section class="evidence">
-    <div class="eyebrow">what is actually established</div>
+    <div class="eyebrow">why it's built this way</div>
 
     <div class="claim">
-      <div class="hd"><h3>Distraction during needles: solid</h3><span class="pill cool">strong</span></div>
-      <p>Pulling attention away from a needle reliably lowers reported pain and fear. The best-evidenced versions are attention-<em>consuming</em> — virtual reality trials in children show large reductions, and passive distraction does less than active. That is why this app makes you do a task rather than just play you something nice.</p>
+      <div class="hd"><h3>A memory game, not a sound</h3><span class="pill cool">best evidence</span></div>
+      <p>Pain grabs attention whenever there's spare capacity. Holding a running sequence in your head (an "n-back" task) uses that capacity up. In lab studies, people playing 1-back and 2-back games rated cold and painful stimuli as less intense, and harder versions worked better than easy ones, up to a ceiling. The effect even shows up in the spinal cord's response. Pleasant sounds or tones on their own mostly change how <em>unpleasant</em> pain feels, not how strong it is.</p>
     </div>
 
     <div class="claim">
-      <div class="hd"><h3>Sound itself, played quietly: real, and stranger than expected</h3><span class="pill cool">promising</span></div>
-      <p>A 2022 <em>Science</em> study found sound blunted pain in mice only when it sat about <strong>5 dB above background noise</strong>. Louder versions of the same sound did nothing. The mechanism was a specific auditory-cortex-to-thalamus pathway, not enjoyment of the music. In humans, self-chosen music raises pain tolerance in controlled trials — though results are inconsistent procedure to procedure. Hence the threshold calibration: this app tries to be barely audible on purpose.</p>
+      <div class="hd"><h3>What to honestly expect</h3><span class="pill">modest</span></div>
+      <p>This is not a numbing agent. Expect pain to feel somewhat lower and to bother you less. Lab studies show ratings drop more reliably than endurance does; in one, pain-free people kept a hand in cold water about a quarter longer while distracted. A single shot is also over in a second, so the game has to be running and absorbing you <em>before</em> the needle arrives, not started at the last moment.</p>
     </div>
 
     <div class="claim">
-      <div class="hd"><h3>Vibration beating pain: true, but only at the injection site</h3><span class="pill hot">your idea needs an edit</span></div>
-      <p>The device that already does this — Buzzy, a vibrating cold pack — works through gate control: large touch fibres entering the <em>same spinal segment</em> as the needle crowd out the pain signal. That gate is segmental. A buzz in your ear cannot close the gate for a jab in your arm; the nerves never meet. So ear flutter here is a salient attention grabber, not a gate. If you want the gate effect too, hold a vibrating phone against the arm a few centimetres from the needle.</p>
+      <div class="hd"><h3>The ear can't block the nerve</h3><span class="pill hot">add the arm</span></div>
+      <p>Vibration and cold numb a jab only when they're close to it, because they work on the same nerve path in the spinal cord. Sound in your ear can't do that; it works through attention alone. So the strongest setup is both: something cold or buzzing near the arm for the sting, and the game in your ears for your attention.</p>
     </div>
 
     <div class="claim">
-      <div class="hd"><h3>Stimulating the ear to trigger an analgesic reflex: plausible, wrong hardware</h3><span class="pill hot">not what buds do</span></div>
-      <p>There is a genuine nerve target in the ear — the auricular branch of the vagus, reachable at the tragus and cymba conchae. Transcutaneous auricular vagus nerve stimulation raises pain thresholds in humans and animals, seemingly via serotonergic descending control. But those studies use ~25 Hz <em>electrical</em> pulses through skin electrodes, typically for 30 minutes. An AirPod is a loudspeaker; it delivers acoustic pressure, not current, and there is no evidence acoustic flutter recruits that pathway. Treat the vagus story as unclaimed, not proven.</p>
-    </div>
-
-    <div class="claim">
-      <div class="hd"><h3>Binaural beats: weak evidence, cheap to include</h3><span class="pill">low quality</span></div>
-      <p>Reviews find a medium pooled effect on pain but rate the underlying trials as high risk of bias and low to very low quality evidence. One consistent hint: exposure <em>before</em> and during beats exposure during alone. That is why the primer runs a full minute ahead of the needle.</p>
-    </div>
-
-    <div class="claim">
-      <div class="hd"><h3>Can AirPods vibrate or tickle you?</h3><span class="pill">hardware limit</span></div>
-      <p>Not in the haptic sense — there is no vibration motor in any shipping AirPod, and no API to drive one. Apple has been reported to be exploring head haptics for Vision Pro typing, which is a hint about the future, not a feature today. What you <em>can</em> get is a 40–110 Hz tone in a sealed canal, which most people perceive as a flutter or tickle rather than a pitch. That is a real percept, produced by the driver you already own. This app leans on it.</p>
-    </div>
-
-    <div class="claim">
-      <div class="hd"><h3>The honest summary</h3></div>
-      <p>Your instinct is right in the part that matters: ear-delivered stimulation can reduce injection pain, and AirPods are a legitimate delivery device for it. It works through <strong>attention and central pain modulation</strong>, not through blocking the nerve. Expect a modest effect — a point or two on a ten-point scale, more for the fear than the sting — layered on top of, not instead of, the boring things that work: numbing cream, a good injector, distraction, breathing out on insertion.</p>
+      <div class="hd"><h3>Look away</h3><span class="pill cool">free</span></div>
+      <p>Paying attention to a body part turns pain there up; attending elsewhere turns it down. Closing your eyes and listening hard is a good combination.</p>
     </div>
   </section>
 
   <footer>
-    <p class="note"><strong>Not a medical device.</strong> This is a distraction aid built from published research, not a treatment, and it makes no diagnostic or therapeutic claim. Skip it if you need to hear instructions during a procedure, if you have hyperacusis or noise-triggered tinnitus, or if your clinician asks you to take the buds out. Never raise the volume to chase an effect — the evidence points the other way.</p>
+    <p class="note"><strong>Not a medical device.</strong> A distraction aid built from published research. It makes no diagnostic or treatment claim. Keep Transparency on so you can hear the person giving the injection, and take your earbuds out if they ask.</p>
     <p class="note">Sources:
-      <a href="https://www.science.org/doi/10.1126/science.abn4663" target="_blank" rel="noopener">Sound induces analgesia through corticothalamic circuits (Science, 2022)</a> ·
-      <a href="https://www.nih.gov/news-events/news-releases/researchers-discover-how-sound-reduces-pain-mice" target="_blank" rel="noopener">NIH summary</a> ·
-      <a href="https://onlinelibrary.wiley.com/doi/10.1002/ejp.70095" target="_blank" rel="noopener">Self-chosen music and music-induced analgesia (Eur J Pain, 2025)</a> ·
-      <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8430753/" target="_blank" rel="noopener">Distraction for needle pain in children: meta-analysis</a> ·
-      <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9399850/" target="_blank" rel="noopener">VR for needle procedures: meta-analysis</a> ·
-      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12377409/" target="_blank" rel="noopener">Cold + vibration at the venipuncture site (RCT, 2025)</a> ·
-      <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10547103/" target="_blank" rel="noopener">Buzzy device effectiveness</a> ·
-      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11543976/" target="_blank" rel="noopener">taVNS and conditioned pain modulation</a> ·
-      <a href="https://pubmed.ncbi.nlm.nih.gov/41013640/" target="_blank" rel="noopener">taVNS analgesia via serotonergic pathways</a> ·
-      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10785528/" target="_blank" rel="noopener">Binaural beats and pain: systematic review</a> ·
-      <a href="https://appleinsider.com/articles/25/08/07/airpods-could-vibrate-your-head-when-you-type-on-apple-vision-pro-in-the-future" target="_blank" rel="noopener">Reported AirPods haptics exploration</a>
+      <a href="https://www.sciencedirect.com/science/article/pii/S152659002100016X" target="_blank" rel="noopener">Working memory load reduces pain and spinal nociception</a> ·
+      <a href="https://www.tandfonline.com/doi/full/10.2147/JPR.S546795" target="_blank" rel="noopener">Load-dependent distraction analgesia (fNIRS)</a> ·
+      <a href="https://doi.org/10.1093/pm/pnac207" target="_blank" rel="noopener">1- and 2-back tasks reduce perceived pain</a> ·
+      <a href="https://www.sciencedirect.com/science/article/pii/S0960982212003934" target="_blank" rel="noopener">Attention modulates spinal responses to pain</a> ·
+      <a href="https://link.springer.com/article/10.1007/s00221-017-4903-x" target="_blank" rel="noopener">Are auditory distractors special?</a> ·
+      <a href="https://pubmed.ncbi.nlm.nih.gov/9060011/" target="_blank" rel="noopener">Distraction and cold pressor tolerance</a> ·
+      <a href="https://pubmed.ncbi.nlm.nih.gov/2352758/" target="_blank" rel="noopener">Distraction effects on cold pressor pain</a> ·
+      <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3387012/" target="_blank" rel="noopener">Orienting attention modulates pain</a> ·
+      <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12377409/" target="_blank" rel="noopener">Cold and vibration at the needle site (RCT)</a> ·
+      <a href="https://pubmed.ncbi.nlm.nih.gov/30861174/" target="_blank" rel="noopener">Electric toothbrush as vibration anesthesia</a>
     </p>
   </footer>
 </div>
 
-<div id="tapzone">
-  <div class="phaselabel" id="tz-phase">prime</div>
-  <svg id="ring" viewBox="0 0 100 100" aria-hidden="true">
-    <circle cx="50" cy="50" r="44" fill="none" stroke="var(--line)" stroke-width="1.5"></circle>
-    <circle id="ring-breath" cx="50" cy="50" r="20" fill="none" stroke="var(--aqua)" stroke-width="2.5"></circle>
-    <circle id="ring-pulse" cx="50" cy="50" r="6" fill="var(--signal)" opacity="0"></circle>
-  </svg>
-  <div class="cue" id="tz-cue">Breathe in…</div>
-  <div class="hint" id="tz-hint">Tap anywhere the instant you hear the higher pip.</div>
-  <div class="score" id="tz-score"></div>
-  <div class="zonebtns">
-    <button id="btn-now" class="btn-primary">Needle now</button>
-    <button id="btn-stop" class="btn-ghost">Stop</button>
+<div id="play" role="dialog" aria-modal="true" aria-label="Game">
+  <div id="v-main" style="display:contents">
+    <div class="phaselabel" id="p-phase">warm-up</div>
+    <div class="clock" id="p-clock" style="display:none">0:00</div>
+    <svg id="ring" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="44" fill="none" stroke="var(--line)" stroke-width="1.5"></circle>
+      <circle id="ring-in" cx="50" cy="50" r="30" fill="none" stroke="var(--line)" stroke-width="3"></circle>
+    </svg>
+    <div class="cue" id="p-cue">Listen</div>
+    <div class="hint" id="p-hint"></div>
+    <div class="score" id="p-score"></div>
   </div>
+  <div id="v-rate" class="rate" style="display:none">
+    <div class="eyebrow" id="r-eyebrow">rate it</div>
+    <h2 id="r-q">How bad did it get, at the worst?</h2>
+    <div class="slider-row">
+      <div class="lab"><span>0 nothing · 10 worst imaginable</span><b id="r-val">5</b></div>
+      <input type="range" id="r-pain" min="0" max="10" value="5" step="1" aria-label="Pain rating">
+    </div>
+  </div>
+  <div class="zonebtns" id="p-btns"></div>
 </div>
-<div class="flashpad" id="flash"></div>
+<div class="edge" id="edge"></div>
 
 <script>
 (function () {
   "use strict";
 
-  if (!document.querySelector('meta[name="viewport"]')) {
-    var mv = document.createElement("meta");
-    mv.name = "viewport";
-    mv.content = "width=device-width, initial-scale=1, viewport-fit=cover";
-    document.head.appendChild(mv);
-  }
-
   var $ = function (id) { return document.getElementById(id); };
-  var clamp = function (v, a, b) { return v < a ? a : v > b ? b : v; };
   var dbToGain = function (db) { return Math.pow(10, db / 20); };
+  var now = function () { return performance.now(); };
+  var fmt = function (s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2); };
 
-  var HARD_CAP_DB = -12;          // absolute ceiling on master output
-  var MODES = {
-    full:    { bed: true,  flutter: true,  task: true,  beat: true,  label: "Everything" },
-    task:    { bed: false, flutter: false, task: true,  beat: false, label: "Task only" },
-    flutter: { bed: true,  flutter: true,  task: false, beat: false, label: "Flutter only" },
-    bed:     { bed: true,  flutter: false, task: false, beat: false, label: "Bed only" }
-  };
-  var MODE_KEYS = Object.keys(MODES);
-
-  var PHASES = [
-    { key: "prime",  secs: 60 },
-    { key: "load",   secs: 20 },
-    { key: "moment", secs: 25 }
+  var ICE_MAX = 120;            // seconds; hard stop for the cold-water round
+  var ICE_REST = 300;           // suggested rest between rounds
+  var AFTER_NEEDLE = 30;        // keep playing this long after the needle
+  var NOTES = [                 // four notes, far apart in pitch and placed apart in space,
+    { f: 220, pan: -0.7 },      // so the hard part is remembering, not hearing
+    { f: 330, pan: -0.25 },
+    { f: 494, pan: 0.25 },
+    { f: 740, pan: 0.7 }
   ];
 
-  // ---------------------------------------------------------------- state
-  var S = {
-    ctx: null, master: null, cap: null,
-    levelDb: -34,
-    flutterHz: 55,
-    trackRoom: false,
-    blind: true,
-    mode: "full",
-    running: false,
-    phase: null,
-    phaseEnds: 0,
-    breathT0: 0,
-    breathCycle: -1,
-    momentT0: 0,
-    momentDone: false,
-    nodes: {},
-    task: { on: false, hits: 0, misses: 0, early: 0, pending: null, delta: 1.19, rate: 1.15, timer: null },
-    room: { stream: null, analyser: null, buf: null, db: -100, offset: 0 },
-    scope: { pips: [], level: -34 }
-  };
-  function freshTask() {
-    return { on: false, hits: 0, misses: 0, early: 0, pending: null, delta: 1.19, rate: 1.15, timer: null };
-  }
+  // ------------------------------------------------------------- audio
+  var A = { ctx: null, master: null, bg: null, bgNodes: [], silentEl: null, volDb: -18 };
 
-  // ---------------------------------------------------------------- audio
-  function ensureCtx() {
-    if (S.ctx) return S.ctx;
-    var AC = window.AudioContext || window.webkitAudioContext;
-    S.ctx = new AC();
-    S.cap = S.ctx.createGain();
-    S.cap.gain.value = dbToGain(HARD_CAP_DB);
-    S.cap.connect(S.ctx.destination);
-    S.master = S.ctx.createGain();
-    S.master.gain.value = dbToGain(S.levelDb);
-    S.master.connect(S.cap);
-    return S.ctx;
-  }
-
-  function noiseBuffer(ctx, seconds, brown) {
-    var n = Math.floor(ctx.sampleRate * seconds);
-    var buf = ctx.createBuffer(2, n, ctx.sampleRate);
-    for (var ch = 0; ch < 2; ch++) {
-      var d = buf.getChannelData(ch), last = 0;
-      for (var i = 0; i < n; i++) {
-        var w = Math.random() * 2 - 1;
-        if (brown) { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; }
-        else { d[i] = w * 0.5; }
-      }
+  function audio() {
+    if (!A.ctx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      A.ctx = new AC();
+      var cap = A.ctx.createGain();
+      cap.gain.value = dbToGain(-6);          // absolute ceiling
+      cap.connect(A.ctx.destination);
+      A.master = A.ctx.createGain();
+      A.master.gain.value = dbToGain(A.volDb);
+      A.master.connect(cap);
     }
-    return buf;
+    if (A.ctx.state === "suspended") A.ctx.resume();
+    unlockSilentSwitch();
+    return A.ctx;
   }
 
-  function startBed() {
-    var ctx = S.ctx, g = ctx.createGain(), lp = ctx.createBiquadFilter();
-    var src = ctx.createBufferSource();
-    src.buffer = noiseBuffer(ctx, 4, true);
-    src.loop = true;
-    lp.type = "lowpass"; lp.frequency.value = 900; lp.Q.value = 0.5;
-    g.gain.value = 0;
-    src.connect(lp).connect(g).connect(S.master);
-    src.start();
-    g.gain.linearRampToValueAtTime(0.42, ctx.currentTime + 4);
-    S.nodes.bed = { src: src, gain: g, filter: lp };
+  // iPhone plays Web Audio through the "ambient" channel, which the silent
+  // switch mutes. Ask for the media channel instead; on older iOS, a looping
+  // silent <audio> element holds the page in that channel.
+  function unlockSilentSwitch() {
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+    if (!A.silentEl) {
+      var rate = 8000, n = rate / 2, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+      var w = function (o, s) { for (var i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+      w(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); w(8, "WAVE"); w(12, "fmt ");
+      v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+      v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true);
+      v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, n * 2, true);
+      A.silentEl = new Audio(URL.createObjectURL(new Blob([buf], { type: "audio/wav" })));
+      A.silentEl.loop = true;
+      A.silentEl.setAttribute("playsinline", "");
+    }
+    var p = A.silentEl.play();
+    if (p && p.catch) p.catch(function () {});
   }
 
-  function startFlutter() {
-    var ctx = S.ctx;
-    var osc = ctx.createOscillator(), h2 = ctx.createOscillator();
-    var trem = ctx.createOscillator(), tremG = ctx.createGain();
-    var g = ctx.createGain(), pan = ctx.createStereoPanner(), walk = ctx.createOscillator(), walkG = ctx.createGain();
-
-    osc.type = "sine"; osc.frequency.value = S.flutterHz;
-    h2.type = "sine"; h2.frequency.value = S.flutterHz * 2;
-    var h2g = ctx.createGain(); h2g.gain.value = 0.28;   // helps small drivers render the low tone
-
-    trem.type = "sine"; trem.frequency.value = 7.2;      // the "tickle" rate
-    tremG.gain.value = 0.5;
-    g.gain.value = 0;
-
-    walk.type = "sine"; walk.frequency.value = 0.09;     // slow drift between ears
-    walkG.gain.value = 0.85;
-    walk.connect(walkG).connect(pan.pan);
-
-    trem.connect(tremG).connect(g.gain);
-    osc.connect(g); h2.connect(h2g).connect(g);
-    g.connect(pan).connect(S.master);
-
-    osc.start(); h2.start(); trem.start(); walk.start();
-    g.gain.value = 0.0;
-    g.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 3);
-    S.nodes.flutter = { osc: osc, h2: h2, trem: trem, gain: g, walk: walk, pan: pan };
+  function releaseAudio() {
+    if (A.silentEl) A.silentEl.pause();
   }
 
-  function startBeat() {
-    var ctx = S.ctx, base = 196, delta = 10;   // alpha-band difference
-    var l = ctx.createOscillator(), r = ctx.createOscillator();
-    var lg = ctx.createGain(), rg = ctx.createGain();
-    var merge = ctx.createChannelMerger(2), g = ctx.createGain();
-    l.type = r.type = "sine";
-    l.frequency.value = base; r.frequency.value = base + delta;
-    lg.gain.value = rg.gain.value = 0.5;
-    l.connect(lg).connect(merge, 0, 0);
-    r.connect(rg).connect(merge, 0, 1);
-    g.gain.value = 0;
-    merge.connect(g).connect(S.master);
-    l.start(); r.start();
-    g.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 6);
-    S.nodes.beat = { l: l, r: r, gain: g };
+  function setVolume(db) {
+    A.volDb = db;
+    $("vol-val").textContent = db + " dB";
+    if (A.master) A.master.gain.setTargetAtTime(dbToGain(db), A.ctx.currentTime, 0.05);
   }
 
-  function breathSwell(inhaleSecs, exhaleSecs) {
-    var ctx = S.ctx, t = ctx.currentTime;
-    var src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
-    src.buffer = noiseBuffer(ctx, 2, false); src.loop = true;
-    bp.type = "bandpass"; bp.frequency.value = 480; bp.Q.value = 0.9;
-    g.gain.setValueAtTime(0.0001, t);
-    src.connect(bp).connect(g).connect(S.master);
-    src.start(t);
-    g.gain.exponentialRampToValueAtTime(0.3, t + inhaleSecs);
-    bp.frequency.setValueAtTime(380, t);
-    bp.frequency.linearRampToValueAtTime(900, t + inhaleSecs);
-    bp.frequency.linearRampToValueAtTime(300, t + inhaleSecs + exhaleSecs);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + inhaleSecs + exhaleSecs);
-    src.stop(t + inhaleSecs + exhaleSecs + 0.2);
-  }
-
-  function pip(freq, when, dur, gain) {
-    var ctx = S.ctx;
-    var o = ctx.createOscillator(), g = ctx.createGain(), pan = ctx.createStereoPanner();
-    o.type = "triangle"; o.frequency.value = freq;
-    pan.pan.value = Math.random() * 1.6 - 0.8;   // localisation adds attentional load
+  function note(i, when) {
+    var ctx = A.ctx, nd = NOTES[i];
+    var o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain(), p = ctx.createStereoPanner();
+    o.type = "triangle"; o.frequency.value = nd.f;
+    o2.type = "sine"; o2.frequency.value = nd.f * 2;
+    var g2 = ctx.createGain(); g2.gain.value = 0.18;
+    p.pan.value = nd.pan;
     g.gain.setValueAtTime(0.0001, when);
-    g.gain.exponentialRampToValueAtTime(gain, when + 0.012);
-    g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
-    o.connect(g).connect(pan).connect(S.master);
-    o.start(when); o.stop(when + dur + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.7, when + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + 0.38);
+    o.connect(g); o2.connect(g2).connect(g);
+    g.connect(p).connect(A.master);
+    o.start(when); o2.start(when);
+    o.stop(when + 0.42); o2.stop(when + 0.42);
   }
 
-  function chime(freqs, gain) {
-    var t = S.ctx.currentTime;
-    freqs.forEach(function (f, i) { pip(f, t + i * 0.11, 0.5, gain || 0.22); });
-  }
-
-  function stopAll() {
-    Object.keys(S.nodes).forEach(function (k) {
-      var n = S.nodes[k];
-      if (!n) return;
-      try {
-        if (n.gain) n.gain.gain.cancelScheduledValues(S.ctx.currentTime);
-        if (n.gain) n.gain.gain.linearRampToValueAtTime(0.0001, S.ctx.currentTime + 0.35);
-        ["src", "osc", "h2", "trem", "walk", "l", "r"].forEach(function (p) {
-          if (n[p] && n[p].stop) { try { n[p].stop(S.ctx.currentTime + 0.5); } catch (e) {} }
-        });
-      } catch (e) {}
+  function chime(freqs) {
+    var t = A.ctx.currentTime;
+    freqs.forEach(function (f, k) {
+      var o = A.ctx.createOscillator(), g = A.ctx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + k * 0.14);
+      g.gain.exponentialRampToValueAtTime(0.35, t + k * 0.14 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + k * 0.14 + 0.7);
+      o.connect(g).connect(A.master);
+      o.start(t + k * 0.14); o.stop(t + k * 0.14 + 0.75);
     });
-    S.nodes = {};
-  }
-
-  // ---------------------------------------------------------------- task
-  function scheduleTask() {
-    if (!S.task.on) return;
-    var jitter = S.task.rate * (0.7 + Math.random() * 0.6);
-    S.task.timer = setTimeout(function () {
-      if (!S.task.on) return;
-      var isTarget = Math.random() < 0.3;
-      var base = 330;
-      var f = isTarget ? base * S.task.delta : base;
-      pip(f, S.ctx.currentTime + 0.02, 0.09, 0.5);
-      S.scope.pips.push({ t: performance.now(), target: isTarget });
-      if (S.scope.pips.length > 60) S.scope.pips.shift();
-
-      if (S.task.pending && !S.task.pending.answered && S.task.pending.target) {
-        S.task.misses++;
-      }
-      S.task.pending = { target: isTarget, at: performance.now(), answered: false };
-      renderScore();
-      scheduleTask();
-    }, jitter * 1000);
-  }
-
-  function tap() {
-    if (!S.task.on) return;
-    var p = S.task.pending;
-    if (p && !p.answered && performance.now() - p.at < 1100) {
-      p.answered = true;
-      if (p.target) {
-        S.task.hits++;
-        pulseRing();
-        // getting good? make it harder — keeps attention fully committed
-        if (S.task.hits % 4 === 0) {
-          S.task.delta = Math.max(1.045, S.task.delta - 0.022);
-          S.task.rate = Math.max(0.68, S.task.rate - 0.05);
-        }
-      } else {
-        S.task.false++;
-        S.task.delta = Math.min(1.3, S.task.delta + 0.012);
-      }
-    } else {
-      S.task.early++;
-    }
-    renderScore();
-  }
-
-  function renderScore() {
-    var t = S.task;
-    $("tz-score").textContent = t.on
-      ? "hits " + t.hits + "   missed " + t.misses + "   early " + t.early + "   Δ" + t.delta.toFixed(2)
-      : "";
-  }
-
-  function pulseRing() {
-    var el = $("ring-pulse");
-    el.setAttribute("opacity", "0.9");
-    setTimeout(function () { el.setAttribute("opacity", "0"); }, 130);
-  }
-
-  // ---------------------------------------------------------------- room mic
-  function startRoom() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      $("ro-room").textContent = "n/a"; $("opt-room").checked = false; S.trackRoom = false; return;
-    }
-    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, autoGainControl: false, noiseSuppression: false } })
-      .then(function (stream) {
-        ensureCtx();
-        var src = S.ctx.createMediaStreamSource(stream);
-        var an = S.ctx.createAnalyser();
-        an.fftSize = 1024;
-        src.connect(an);
-        S.room.stream = stream; S.room.analyser = an;
-        S.room.buf = new Float32Array(an.fftSize);
-      })
-      .catch(function () {
-        $("ro-room").textContent = "denied"; $("opt-room").checked = false; S.trackRoom = false;
-      });
-  }
-
-  function stopRoom() {
-    if (S.room.stream) { S.room.stream.getTracks().forEach(function (t) { t.stop(); }); }
-    S.room.stream = null; S.room.analyser = null; S.room.offset = 0;
-    $("ro-room").textContent = "off";
-  }
-
-  function pollRoom() {
-    if (!S.trackRoom || !S.room.analyser) return;
-    S.room.analyser.getFloatTimeDomainData(S.room.buf);
-    var sum = 0;
-    for (var i = 0; i < S.room.buf.length; i++) sum += S.room.buf[i] * S.room.buf[i];
-    var db = 20 * Math.log10(Math.sqrt(sum / S.room.buf.length) + 1e-9);
-    S.room.db = S.room.db * 0.85 + db * 0.15;
-    // quiet room -> sit at the calibrated threshold; noisy room -> lift, but never more than 8 dB
-    var lift = clamp((S.room.db + 55) * 0.35, 0, 8);
-    S.room.offset = S.room.offset * 0.9 + lift * 0.1;
-    $("ro-room").textContent = Math.round(S.room.db) + " dBFS +" + S.room.offset.toFixed(1);
-    applyLevel();
-  }
-
-  function applyLevel() {
-    if (!S.master) return;
-    var db = clamp(S.levelDb + (S.trackRoom ? S.room.offset : 0), -70, -14);
-    S.master.gain.setTargetAtTime(dbToGain(db), S.ctx.currentTime, 0.15);
-    S.scope.level = db;
-    $("ro-level").textContent = Math.round(db) + " dB";
-  }
-
-  // ---------------------------------------------------------------- run loop
-  function setStep(key) {
-    var steps = document.querySelectorAll(".step");
-    var order = ["setup", "prime", "load", "moment", "debrief"];
-    var idx = order.indexOf(key);
-    for (var i = 0; i < steps.length; i++) {
-      var k = steps[i].getAttribute("data-step");
-      var j = order.indexOf(k);
-      steps[i].setAttribute("data-state", j < idx ? "done" : j === idx ? "active" : "");
-    }
-  }
-
-  function beginRun() {
-    ensureCtx();
-    if (S.ctx.state === "suspended") S.ctx.resume();
-
-    S.mode = S.blind ? MODE_KEYS[Math.floor(Math.random() * MODE_KEYS.length)] : S.mode;
-    var m = MODES[S.mode];
-
-    S.running = true;
-    S.task = freshTask();
-    S.momentDone = false;
-    S.breathCycle = -1;
-    applyLevel();
-
-    if (m.bed) startBed();
-    if (m.flutter) startFlutter();
-    if (m.beat) startBeat();
-
-    $("ro-flutter").textContent = m.flutter ? S.flutterHz + " Hz" : "—";
-    $("panel-setup").style.display = "none";
-    $("panel-debrief").style.display = "none";
-    $("tapzone").classList.add("on");
-    $("btn-now").disabled = false;
-    $("btn-now").textContent = "Needle now";
-    S.breathT0 = performance.now();
-    enterPhase("prime");
-  }
-
-  function enterPhase(key) {
-    S.phase = key;
-    var def = PHASES.filter(function (p) { return p.key === key; })[0];
-    S.phaseEnds = performance.now() + (def ? def.secs * 1000 : 0);
-    setStep(key);
-    $("tz-phase").textContent = key === "moment" ? "the moment" : key;
-    var m = MODES[S.mode];
-
-    if (key === "prime") {
-      $("tz-cue").textContent = "Breathe in…";
-      $("tz-hint").textContent = "Nothing to do yet. Follow the ring: in for four, out for six.";
-    }
-    if (key === "load") {
-      if (m.task) {
-        S.task.on = true;
-        scheduleTask();
-        $("tz-hint").textContent = "Tap anywhere the instant you hear the higher pip.";
-      } else {
-        $("tz-hint").textContent = "Keep following the ring. Say when you are ready.";
-      }
-      $("tz-cue").textContent = "Ready when you are";
-    }
-    if (key === "moment") {
-      S.momentT0 = performance.now();
-      // the needle often arrives early, straight out of the primer — make sure
-      // the task is actually running before it does
-      if (m.task && !S.task.on) {
-        S.task.on = true;
-        scheduleTask();
-      }
-      $("tz-hint").textContent = m.task
-        ? "Tap anywhere the instant you hear the higher pip."
-        : "Ride it out. Keep the exhale long and slow — all the way to empty.";
-      $("btn-now").textContent = "Needle marked";
-      if (m.flutter && S.nodes.flutter) {
-        var g = S.nodes.flutter.gain.gain, t = S.ctx.currentTime;
-        g.cancelScheduledValues(t);
-        g.setTargetAtTime(0.95, t, 0.4);
-        S.nodes.flutter.trem.frequency.setTargetAtTime(9.5, t, 0.6);
-      }
-      if (m.task) { S.task.rate = Math.max(0.62, S.task.rate - 0.18); }
-      breathSwell(2, 9);
-      chime([392, 294], 0.18);
-      $("tz-cue").textContent = "Long slow exhale";
-      flash();
-    }
-    renderScore();
-  }
-
-  function flash() {
-    var el = $("flash");
-    el.style.transition = "none"; el.style.opacity = "0.16";
-    requestAnimationFrame(function () {
-      el.style.transition = "opacity .7s ease";
-      el.style.opacity = "0";
-    });
-  }
-
-  function endRun(save) {
-    S.task.on = false;
-    if (S.task.timer) clearTimeout(S.task.timer);
-    stopAll();
-    S.running = false;
-    $("tapzone").classList.remove("on");
-    $("ro-flutter").textContent = "—";
-    if (save) {
-      setStep("debrief");
-      $("panel-debrief").style.display = "flex";
-      $("reveal").innerHTML = S.blind
-        ? 'Build stays hidden until you save. Task: <b>' + S.task.hits + '</b> hits, ' + S.task.misses + ' missed.'
-        : 'Build: <b>' + MODES[S.mode].label + '</b>. Task: ' + S.task.hits + ' hits, ' + S.task.misses + ' missed.';
-      $("panel-debrief").scrollIntoView({ behavior: "smooth", block: "center" });
-    } else {
-      setStep("setup");
-      $("panel-setup").style.display = "flex";
-    }
-  }
-
-  function tick() {
-    requestAnimationFrame(tick);
-    pollRoom();
-    drawScope();
-
-    if (!S.running) return;
-
-    // breath ring: 4s in / 6s out, continuous through the run
-    var cyc = 10000;
-    var since = performance.now() - S.breathT0;
-    var e = since % cyc;
-    var cycleIdx = Math.floor(since / cyc);
-    var frac = e < 4000 ? e / 4000 : 1 - (e - 4000) / 6000;
-    $("ring-breath").setAttribute("r", (14 + frac * 28).toFixed(1));
-
-    if (S.phase === "prime") {
-      if (cycleIdx !== S.breathCycle) {   // fires exactly once per cycle
-        S.breathCycle = cycleIdx;
-        breathSwell(4, 6);
-      }
-      var want = e < 4000 ? "Breathe in…" : "…and out";
-      if ($("tz-cue").textContent !== want) $("tz-cue").textContent = want;
-    }
-
-    var left = Math.max(0, S.phaseEnds - performance.now());
-    if (S.phase === "prime") {
-      $("clk-prime").textContent = Math.ceil(left / 1000) + "s";
-      if (left <= 0) enterPhase("load");
-    } else if (S.phase === "load") {
-      $("clk-load").textContent = "running";
-      // hold here indefinitely; the needle arrives when it arrives
-      if (left <= 0) S.phaseEnds = performance.now() + 20000;
-    } else if (S.phase === "moment" && !S.momentDone) {
-      var el = (performance.now() - S.momentT0) / 1000;
-      $("clk-moment").textContent = Math.max(0, Math.ceil(25 - el)) + "s";
-      if (el > 3 && el < 3.2) $("tz-cue").textContent = "Keep going";
-      if (el > 12 && el < 12.2) $("tz-cue").textContent = "Almost done";
-      if (el >= 25) {
-        S.momentDone = true;
-        $("tz-cue").textContent = "Done";
-        chime([294, 392, 523], 0.16);
-        setTimeout(function () { if (S.running) endRun(true); }, 900);
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------- scope
-  var cv = $("scope"), cx = cv.getContext("2d");
-  var pal = null, palAge = 0;
-  function palette() {
-    if (pal && palAge++ < 30) return pal;
-    palAge = 0;
-    var css = getComputedStyle(document.documentElement);
-    pal = {
-      line: css.getPropertyValue("--line").trim() || "#27393F",
-      sig: css.getPropertyValue("--signal").trim() || "#E9A13B",
-      aqua: css.getPropertyValue("--aqua").trim() || "#4FB2A6",
-      faint: css.getPropertyValue("--text-faint").trim() || "#5E7375"
-    };
-    return pal;
-  }
-
-  function drawScope() {
-    var w = cv.width, h = cv.height;
-    var p = palette(), line = p.line, sig = p.sig, aqua = p.aqua, faint = p.faint;
-
-    cx.clearRect(0, 0, w, h);
-
-    // audiogram-style grid
-    cx.strokeStyle = line; cx.lineWidth = 1;
-    for (var i = 1; i < 8; i++) {
-      cx.globalAlpha = 0.5;
-      cx.beginPath(); cx.moveTo(i * w / 8, 0); cx.lineTo(i * w / 8, h); cx.stroke();
-    }
-    for (var j = 1; j < 4; j++) {
-      cx.beginPath(); cx.moveTo(0, j * h / 4); cx.lineTo(w, j * h / 4); cx.stroke();
-    }
-    cx.globalAlpha = 1;
-
-    // working level as a horizontal trace, room floor beneath it
-    var lvY = h - ((S.scope.level + 70) / 56) * h;
-    cx.strokeStyle = sig; cx.lineWidth = 2;
-    cx.beginPath(); cx.moveTo(0, lvY); cx.lineTo(w, lvY); cx.stroke();
-
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cx.font = (9 * dpr).toFixed(0) + "px ui-monospace, monospace";
-    cx.fillStyle = faint;
-    cx.fillText("−14", 4 * dpr, 11 * dpr);
-    cx.fillText("−70", 4 * dpr, h - 4 * dpr);
-    cx.fillStyle = sig;
-    cx.fillText("signal", 4 * dpr, lvY - 4 * dpr);
-    if (S.trackRoom && S.room.analyser) {
-      cx.fillStyle = aqua;
-      cx.fillText("room", 4 * dpr, h - ((clamp(S.room.db, -80, -10) + 70) / 56) * h + 12 * dpr);
-    }
-
-    if (S.trackRoom && S.room.analyser) {
-      var roomY = h - ((clamp(S.room.db, -80, -10) + 70) / 56) * h;
-      cx.strokeStyle = aqua; cx.lineWidth = 1.5;
-      cx.setLineDash([5, 5]);
-      cx.beginPath(); cx.moveTo(0, roomY); cx.lineTo(w, roomY); cx.stroke();
-      cx.setLineDash([]);
-    }
-
-    // pip history, newest at the right
-    var now = performance.now();
-    cx.lineWidth = 2;
-    S.scope.pips.forEach(function (p) {
-      var age = (now - p.t) / 9000;
-      if (age > 1) return;
-      var x = w - age * w;
-      cx.globalAlpha = 1 - age;
-      cx.strokeStyle = p.target ? sig : faint;
-      var ht = p.target ? h * 0.42 : h * 0.24;
-      cx.beginPath(); cx.moveTo(x, h * 0.5 + ht / 2); cx.lineTo(x, h * 0.5 - ht / 2); cx.stroke();
-    });
-    cx.globalAlpha = 1;
-
-    // flutter waveform along the bottom when active
-    if (S.nodes.flutter) {
-      cx.strokeStyle = aqua; cx.lineWidth = 1.5; cx.beginPath();
-      var t0 = now / 1000;
-      for (var x2 = 0; x2 <= w; x2 += 3) {
-        var ph = (x2 / w) * 6 + t0 * 2;
-        var env = 0.5 + 0.5 * Math.sin(ph * 1.1);
-        var y = h - 14 + Math.sin(ph * 6) * 9 * env;
-        if (x2 === 0) cx.moveTo(x2, y); else cx.lineTo(x2, y);
-      }
-      cx.stroke();
-    }
-  }
-
-  // ---------------------------------------------------------------- log
-  var LS_KEY = "earshot.log.v1";
-  function readLog() {
-    try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch (e) { return []; }
-  }
-  function writeLog(rows) {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(rows)); } catch (e) {}
-  }
-  function renderLog() {
-    var rows = readLog();
-    var panel = $("panel-log");
-    if (!rows.length) { panel.style.display = "none"; return; }
-    panel.style.display = "flex";
-    $("log-h").textContent = rows.length + (rows.length === 1 ? " run so far" : " runs so far");
-
-    var byMode = {};
-    rows.forEach(function (r) {
-      (byMode[r.mode] = byMode[r.mode] || []).push(r.pain);
-    });
-    var bars = MODE_KEYS.filter(function (k) { return byMode[k]; }).map(function (k) {
-      var a = byMode[k], mean = a.reduce(function (x, y) { return x + y; }, 0) / a.length;
-      return { k: k, mean: mean, n: a.length };
-    }).sort(function (a, b) { return a.mean - b.mean; });
-
-    $("log-bars").innerHTML = bars.map(function (b) {
-      return '<div class="bar"><span>' + MODES[b.k].label + '</span>' +
-        '<span class="track"><span class="fill" style="width:' + (b.mean / 10 * 100) + '%"></span></span>' +
-        '<span class="v">' + b.mean.toFixed(1) + '</span></div>';
-    }).join("");
-
-    var head = '<tr><th>when</th><th>build</th><th>pain</th><th>distr.</th><th>hits</th></tr>';
-    var body = rows.slice().reverse().slice(0, 12).map(function (r) {
-      return '<tr><td>' + r.when + '</td><td class="n">' + MODES[r.mode].label + '</td><td class="n">' +
-        r.pain + '</td><td>' + r.distraction + '</td><td>' + r.hits + '</td></tr>';
-    }).join("");
-    $("log-table").innerHTML = head + body;
-
-    var n = rows.length;
-    $("log-note").textContent = n < 6
-      ? "Too few runs to mean anything yet — averages start to separate around six to ten, and only if the builds keep getting shuffled."
-      : "Lowest average pain: " + MODES[bars[0].k].label + " at " + bars[0].mean.toFixed(1) + " over " + bars[0].n + " run(s). Treat gaps under about one point as noise.";
-  }
-
-  // ---------------------------------------------------------------- wiring
-  var calNode = null;
-  function holdCal(on) {
-    ensureCtx();
-    if (S.ctx.state === "suspended") S.ctx.resume();
-    if (on && !calNode) {
-      var o = S.ctx.createOscillator(), g = S.ctx.createGain();
-      o.type = "sine"; o.frequency.value = 1000;
-      g.gain.value = 0.5;
-      o.connect(g).connect(S.master);
-      o.start();
-      calNode = { o: o, g: g };
-      applyLevel();
-      $("btn-cal").textContent = "Release";
-    } else if (!on && calNode) {
-      calNode.g.gain.setTargetAtTime(0.0001, S.ctx.currentTime, 0.05);
-      calNode.o.stop(S.ctx.currentTime + 0.3);
-      calNode = null;
-      $("btn-cal").textContent = "Hold calibration tone";
-    }
   }
 
   function earTest(side) {
-    ensureCtx();
-    if (S.ctx.state === "suspended") S.ctx.resume();
-    var t = S.ctx.currentTime;
-    var o = S.ctx.createOscillator(), g = S.ctx.createGain(), p = S.ctx.createStereoPanner();
-    o.type = "sine"; o.frequency.value = side === "left" ? 440 : 587;
-    p.pan.value = side === "left" ? -1 : 1;
+    audio();
+    var t = A.ctx.currentTime;
+    var o = A.ctx.createOscillator(), g = A.ctx.createGain(), p = A.ctx.createStereoPanner();
+    o.type = "triangle"; o.frequency.value = side < 0 ? 330 : 494;
+    p.pan.value = side;
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.5, t + 0.05);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
-    o.connect(g).connect(p).connect(S.master);
-    applyLevel();
-    o.start(t); o.stop(t + 1);
+    g.gain.exponentialRampToValueAtTime(0.7, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.8);
+    o.connect(g).connect(p).connect(A.master);
+    o.start(t); o.stop(t + 0.85);
   }
 
-  $("btn-left").addEventListener("click", function () { earTest("left"); });
-  $("btn-right").addEventListener("click", function () { earTest("right"); });
+  function startBackground() {
+    var ctx = A.ctx;
+    A.bg = ctx.createGain();
+    A.bg.gain.value = 0.0001;
+    A.bg.connect(A.master);
+    A.bg.gain.exponentialRampToValueAtTime(0.32, ctx.currentTime + 3);
 
-  ["mousedown", "touchstart"].forEach(function (ev) {
-    $("btn-cal").addEventListener(ev, function (e) { e.preventDefault(); holdCal(true); }, { passive: false });
-  });
-  ["mouseup", "mouseleave", "touchend", "touchcancel"].forEach(function (ev) {
-    $("btn-cal").addEventListener(ev, function () { holdCal(false); });
-  });
-
-  $("lv").addEventListener("input", function (e) {
-    S.levelDb = parseInt(e.target.value, 10);
-    $("lv-val").textContent = S.levelDb + " dB";
-    if (S.ctx) applyLevel();
-  });
-
-  $("fl").addEventListener("input", function (e) {
-    S.flutterHz = parseInt(e.target.value, 10);
-    $("fl-val").textContent = S.flutterHz + " Hz";
-    if (S.nodes.flutter) {
-      S.nodes.flutter.osc.frequency.setTargetAtTime(S.flutterHz, S.ctx.currentTime, 0.05);
-      S.nodes.flutter.h2.frequency.setTargetAtTime(S.flutterHz * 2, S.ctx.currentTime, 0.05);
-      $("ro-flutter").textContent = S.flutterHz + " Hz";
+    // brown-noise bed
+    var len = ctx.sampleRate * 4, buf = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (var ch = 0; ch < 2; ch++) {
+      var d = buf.getChannelData(ch), last = 0;
+      for (var i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3; }
     }
-  });
+    var src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    var lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 800;
+    var bedG = ctx.createGain(); bedG.gain.value = 0.5;
+    src.connect(lp).connect(bedG).connect(A.bg);
 
-  $("opt-room").addEventListener("change", function (e) {
-    S.trackRoom = e.target.checked;
-    if (S.trackRoom) startRoom(); else stopRoom();
-  });
+    // low flutter: a 55 Hz tone pulsing 7 times a second, felt more than heard
+    var fl = ctx.createOscillator(); fl.frequency.value = 55;
+    var flG = ctx.createGain(); flG.gain.value = 0.35;
+    var trem = ctx.createOscillator(); trem.frequency.value = 7;
+    var tremG = ctx.createGain(); tremG.gain.value = 0.3;
+    trem.connect(tremG); tremG.connect(flG.gain);
+    fl.connect(flG).connect(A.bg);
 
-  $("opt-blind").addEventListener("change", function (e) {
-    S.blind = e.target.checked;
-    $("mode-manual").style.display = S.blind ? "none" : "block";
-  });
+    src.start(); fl.start(); trem.start();
+    A.bgNodes = [src, fl, trem];
+  }
 
-  Array.prototype.forEach.call(document.querySelectorAll("#mode-btns button"), function (b) {
-    b.addEventListener("click", function () {
-      S.mode = b.getAttribute("data-mode");
-      Array.prototype.forEach.call(document.querySelectorAll("#mode-btns button"), function (o) {
-        o.classList.toggle("btn-primary", o === b);
-        o.classList.toggle("btn-ghost", o !== b);
-      });
+  function stopBackground() {
+    if (!A.bg) return;
+    var t = A.ctx.currentTime;
+    A.bg.gain.cancelScheduledValues(t);
+    A.bg.gain.setTargetAtTime(0.0001, t, 0.2);
+    A.bgNodes.forEach(function (n) { try { n.stop(t + 1); } catch (e) {} });
+    A.bg = null; A.bgNodes = [];
+  }
+
+  // ------------------------------------------------------------- the game
+  var G = null;
+
+  function startGame(onEasySwitch) {
+    G = {
+      on: true, n: 1, warmup: 8, seq: [], cur: null, isi: 2.4, timer: null,
+      hits: 0, misses: 0, wrong: 0,
+      block: { count: 0, targets: 0, hits: 0, wrong: 0 },
+      onMain: onEasySwitch || null
+    };
+    setGameHint();
+    G.timer = setTimeout(step, 700);
+  }
+
+  function step() {
+    if (!G || !G.on) return;
+    var c = G.cur;
+    if (c && c.target && !c.tapped) G.misses++;
+
+    var len = G.seq.length, back = len >= G.n ? G.seq[len - G.n] : -1, pick;
+    if (back >= 0 && Math.random() < 0.3) pick = back;
+    else { do { pick = Math.floor(Math.random() * NOTES.length); } while (pick === back); }
+
+    G.cur = { target: pick === back, tapped: false };
+    G.seq.push(pick);
+    if (G.seq.length > 40) G.seq.shift();
+    note(pick, A.ctx.currentTime + 0.01);
+
+    var b = G.block;
+    b.count++;
+    if (G.cur.target) b.targets++;
+
+    if (G.warmup > 0) {
+      G.warmup--;
+      if (G.warmup === 0) {
+        G.n = 2; G.seq = []; resetBlock();
+        setGameHint();
+        if (G.onMain) { var f = G.onMain; G.onMain = null; f(); }
+      }
+    } else if (b.count >= 12) {
+      adapt();
+    }
+    renderScore();
+    G.timer = setTimeout(step, G.isi * 1000);
+  }
+
+  function resetBlock() { G.block = { count: 0, targets: 0, hits: 0, wrong: 0 }; }
+
+  // keep it hard but doable: speed up when you're good, slow down when you're
+  // lost, and drop to the easier version only if slowing down isn't enough
+  function adapt() {
+    var b = G.block, rate = b.targets ? b.hits / b.targets : 1;
+    if (rate >= 0.75 && b.wrong <= 2) {
+      if (G.n === 1) { G.n = 2; G.seq = []; G.isi = 2.4; flashLevel("Back to two notes back"); }
+      else G.isi = Math.max(1.5, G.isi - 0.2);
+    } else if (rate < 0.4 || b.wrong >= 5) {
+      if (G.isi < 2.8) G.isi = Math.min(2.8, G.isi + 0.25);
+      else if (G.n === 2) { G.n = 1; G.seq = []; flashLevel("Easier for a bit: match the note right before"); }
+    }
+    resetBlock();
+    setGameHint();
+  }
+
+  function tap() {
+    if (!G || !G.on || !G.cur) return;
+    var c = G.cur;
+    if (c.tapped) return;
+    c.tapped = true;
+    if (c.target) { G.hits++; G.block.hits++; feedback(true); }
+    else { G.wrong++; G.block.wrong++; feedback(false); }
+    renderScore();
+  }
+
+  function stopGame() {
+    if (!G) return null;
+    G.on = false;
+    clearTimeout(G.timer);
+    var c = G.cur;
+    if (c && c.target && !c.tapped) G.misses++;
+    var out = { hits: G.hits, misses: G.misses, wrong: G.wrong };
+    G = null;
+    return out;
+  }
+
+  function setGameHint() {
+    if (!G) return;
+    $("p-hint").textContent = G.n === 1
+      ? "Warm-up: tap when a note is the same as the one right before it."
+      : "Tap when a note is the same as the one two notes back.";
+  }
+
+  function renderScore() {
+    if (!G) { $("p-score").textContent = ""; return; }
+    $("p-score").textContent = (G.n === 1 ? "1 back" : "2 back") +
+      "  ·  " + (Math.round(60 / G.isi)) + "/min  ·  hits " + G.hits +
+      "  ·  missed " + G.misses + "  ·  wrong " + G.wrong;
+  }
+
+  function feedback(good) {
+    var ring = $("ring-in");
+    ring.style.stroke = good ? "var(--aqua)" : "var(--alert)";
+    ring.style.fill = good ? "var(--aqua)" : "none";
+    ring.style.fillOpacity = good ? ".18" : "0";
+    setTimeout(function () { ring.style.stroke = ""; ring.style.fill = ""; }, 160);
+    if (!good) {
+      var e = $("edge");
+      e.style.transition = "none"; e.style.opacity = "0.7";
+      requestAnimationFrame(function () { e.style.transition = "opacity .5s ease"; e.style.opacity = "0"; });
+    }
+  }
+
+  function flashLevel(msg) {
+    var hint = $("p-hint");
+    hint.textContent = msg;
+    setTimeout(setGameHint, 2500);
+  }
+
+  // ------------------------------------------------------------- play screen
+  var mode = null;      // "practice" | "shot" | "ice"
+  var wake = null;
+  var tickFn = null;
+
+  function openPlay(phase, cue) {
+    $("play").classList.add("on");
+    $("v-main").style.display = "contents";
+    $("v-rate").style.display = "none";
+    $("p-phase").textContent = phase;
+    $("p-cue").textContent = cue;
+    $("p-hint").textContent = "";
+    $("p-score").textContent = "";
+    $("p-clock").style.display = "none";
+    document.body.style.overflow = "hidden";
+    try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(function (w) { wake = w; }).catch(function () {}); } catch (e) {}
+  }
+
+  function closePlay() {
+    $("play").classList.remove("on");
+    document.body.style.overflow = "";
+    tickFn = null;
+    if (wake) { try { wake.release(); } catch (e) {} wake = null; }
+    stopBackground();
+    releaseAudio();
+    mode = null;
+  }
+
+  function buttons(list) {
+    var box = $("p-btns");
+    box.innerHTML = "";
+    list.forEach(function (b) {
+      var el = document.createElement("button");
+      el.textContent = b.label;
+      el.className = b.primary ? "btn-primary" : "btn-ghost";
+      el.addEventListener("click", function (e) { e.stopPropagation(); b.fn(); });
+      box.appendChild(el);
     });
+  }
+
+  function showRating(eyebrow, question, onSave, saveLabel) {
+    $("v-main").style.display = "none";
+    $("v-rate").style.display = "flex";
+    $("r-eyebrow").textContent = eyebrow;
+    $("r-q").textContent = question;
+    $("r-pain").value = 5; $("r-val").textContent = "5";
+    buttons([{ label: saveLabel || "Save", primary: true, fn: function () { onSave(parseInt($("r-pain").value, 10)); } }]);
+  }
+
+  function abort() {
+    stopGame();
+    ice = null; shot = null;
+    closePlay();
+  }
+
+  // ------------------------------------------------------------- practice
+  function startPractice() {
+    audio();
+    mode = "practice";
+    openPlay("practice", "Listen and tap");
+    startGame(function () { $("p-cue").textContent = "Now two notes back"; });
+    buttons([{ label: "Done", fn: abort }]);
+  }
+
+  // ------------------------------------------------------------- shot mode
+  var shot = null;
+
+  function startShot() {
+    audio();
+    mode = "shot";
+    shot = { t0: now(), needleAt: 0, stats: null };
+    openPlay("warm-up", "Learn the game first");
+    if ($("opt-bg").checked) startBackground();
+    startGame(function () {
+      $("p-phase").textContent = "playing";
+      $("p-cue").textContent = "Keep playing. Tell them you're ready.";
+    });
+    buttons([
+      { label: "Needle now", primary: true, fn: markNeedle },
+      { label: "Stop", fn: abort }
+    ]);
+  }
+
+  function markNeedle() {
+    if (!shot || shot.needleAt) return;
+    shot.needleAt = now();
+    $("p-phase").textContent = "needle";
+    $("p-cue").textContent = "Keep listening";
+    $("p-clock").style.display = "";
+    buttons([{ label: "Stop", fn: abort }]);
+    tickFn = function () {
+      var left = AFTER_NEEDLE - (now() - shot.needleAt) / 1000;
+      $("p-clock").textContent = fmt(Math.ceil(left));
+      if (left <= 0) {
+        tickFn = null;
+        shot.stats = stopGame();
+        stopBackground();
+        chime([392, 523]);
+        $("p-clock").style.display = "none";
+        showRating("done", "How much did the needle hurt?", function (pain) {
+          save({ kind: "shot", pain: pain, stats: shot.stats, minutesBefore: Math.round((shot.needleAt - shot.t0) / 6000) / 10 });
+          shot = null;
+          closePlay();
+          renderLog();
+          $("panel-log").scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
+    };
+  }
+
+  // ------------------------------------------------------------- ice test
+  var ice = null;
+
+  function startIce() {
+    audio();
+    mode = "ice";
+    var order = Math.random() < 0.5 ? ["game", "silence"] : ["silence", "game"];
+    ice = { order: order, round: 0, results: [], handIn: 0 };
+    prepareRound();
+  }
+
+  function prepareRound() {
+    var cond = ice.order[ice.round];
+    var label = "round " + (ice.round + 1) + " of 2 · " + (cond === "game" ? "with the game" : "silence");
+    ice.handIn = 0;
+    if (cond === "game") {
+      openPlay(label, "Learn the game first, hand out of the water");
+      startGame(function () {
+        $("p-cue").textContent = "Now put your hand in the water";
+        buttons([{ label: "Hand is in", primary: true, fn: handIn }, { label: "Stop test", fn: abort }]);
+      });
+      buttons([{ label: "Stop test", fn: abort }]);
+    } else {
+      openPlay(label, "Put your hand in the water");
+      $("p-hint").textContent = "Nothing to do this round. Just keep your hand in as long as you choose.";
+      buttons([{ label: "Hand is in", primary: true, fn: handIn }, { label: "Stop test", fn: abort }]);
+    }
+  }
+
+  function handIn() {
+    if (!ice || ice.handIn) return;
+    ice.handIn = now();
+    $("p-cue").textContent = ice.order[ice.round] === "game" ? "Keep playing" : "Hand in";
+    $("p-clock").style.display = "";
+    $("p-clock").textContent = "0:00";
+    buttons([{ label: "Hand out", primary: true, fn: handOut }]);
+    tickFn = function () {
+      var s = (now() - ice.handIn) / 1000;
+      $("p-clock").textContent = fmt(s);
+      if (s >= ICE_MAX) { chime([523, 392]); handOut(true); }
+    };
+  }
+
+  function handOut(capped) {
+    if (!ice || !ice.handIn) return;
+    tickFn = null;
+    var secs = Math.min(ICE_MAX, Math.round((now() - ice.handIn) / 1000));
+    var stats = stopGame();
+    $("p-clock").style.display = "none";
+    showRating(capped === true ? "time's up · take your hand out" : "hand out",
+      "How bad did it get, at the worst?",
+      function (pain) {
+        ice.results.push({ cond: ice.order[ice.round], secs: secs, capped: secs >= ICE_MAX, pain: pain, stats: stats });
+        if (ice.round === 0) rest(); else finishIce();
+      }, "Next");
+  }
+
+  function rest() {
+    ice.round = 1;
+    var t0 = now();
+    $("v-rate").style.display = "none";
+    $("v-main").style.display = "contents";
+    $("p-phase").textContent = "rest";
+    $("p-cue").textContent = "Dry your hand and let it warm up";
+    $("p-hint").textContent = "Wait until it feels normal again, then keep going. Add more ice if it has melted.";
+    $("p-score").textContent = "";
+    $("p-clock").style.display = "";
+    buttons([{ label: "Hand feels normal: next round", primary: true, fn: function () { tickFn = null; prepareRound(); } }, { label: "Stop test", fn: abort }]);
+    tickFn = function () {
+      var left = ICE_REST - (now() - t0) / 1000;
+      $("p-clock").textContent = left > 0 ? fmt(left) : "0:00";
+    };
+  }
+
+  function finishIce() {
+    var r = ice.results;
+    var game = r.filter(function (x) { return x.cond === "game"; })[0];
+    var sil = r.filter(function (x) { return x.cond === "silence"; })[0];
+    var row = { kind: "ice", game: game, silence: sil, gameFirst: ice.order[0] === "game" };
+    save(row);
+    ice = null;
+    closePlay();
+    showResult(row);
+    renderLog();
+  }
+
+  function showResult(row) {
+    var g = row.game, s = row.silence;
+    var timeWin = g.secs > s.secs + 5, painWin = g.pain < s.pain;
+    $("cmp").innerHTML =
+      '<div class="' + (timeWin || painWin ? "win" : "") + '"><span class="k">with the game</span>' +
+        '<span class="big">' + fmt(g.secs) + (g.capped ? "+" : "") + '</span>' +
+        '<span class="sm">worst pain ' + g.pain + '/10</span></div>' +
+      '<div><span class="k">silence</span>' +
+        '<span class="big">' + fmt(s.secs) + (s.capped ? "+" : "") + '</span>' +
+        '<span class="sm">worst pain ' + s.pain + '/10</span></div>';
+
+    var dSec = g.secs - s.secs, dPain = s.pain - g.pain, parts = [];
+    if (!(g.capped && s.capped)) {
+      if (dSec > 5) parts.push("held on " + dSec + " seconds longer");
+      else if (dSec < -5) parts.push("pulled out " + (-dSec) + " seconds sooner");
+    }
+    if (dPain > 0) parts.push("rated it " + dPain + " point" + (dPain === 1 ? "" : "s") + " lower");
+    else if (dPain < 0) parts.push("rated it " + (-dPain) + " point" + (dPain === -1 ? "" : "s") + " higher");
+
+    var helped = (dPain > 0) || (dSec > 5 && !(g.capped && s.capped));
+    var hurt = (dPain < 0) || (dSec < -5);
+    var v;
+    if (!parts.length) v = "No real difference this time.";
+    else v = "With the game you " + parts.join(" and ") + ".";
+    if (helped && !hurt) v += " That's the effect showing up.";
+    $("verdict").textContent = v;
+    $("verdict-note").textContent =
+      "You did the " + (row.gameFirst ? "game" : "silent") + " round first. One pair of rounds is noisy, because the second dip often feels different just from being second. " +
+      "Repeat it on another day; the app flips the order at random, so a few tests tell you more than one.";
+    $("panel-result").style.display = "flex";
+    $("panel-result").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // ------------------------------------------------------------- history
+  var LS_KEY = "earshot.log.v2";
+  function readLog() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch (e) { return []; }
+  }
+  function save(row) {
+    var d = new Date();
+    row.when = (d.getMonth() + 1) + "/" + d.getDate();
+    var rows = readLog();
+    rows.push(row);
+    try { localStorage.setItem(LS_KEY, JSON.stringify(rows)); } catch (e) {}
+  }
+  function acc(st) {
+    if (!st) return "—";
+    var t = st.hits + st.misses;
+    return t ? Math.round(st.hits / t * 100) + "%" : "—";
+  }
+  function renderLog() {
+    var rows = readLog();
+    if (!rows.length) { $("panel-log").style.display = "none"; return; }
+    $("panel-log").style.display = "flex";
+    $("log-h").textContent = rows.length === 1 ? "1 run so far" : rows.length + " runs so far";
+    var head = "<tr><th>date</th><th>what</th><th>result</th><th>game score</th></tr>";
+    var body = rows.slice().reverse().slice(0, 15).map(function (r) {
+      if (r.kind === "ice") {
+        return "<tr><td>" + r.when + "</td><td>Ice test</td><td>game " + fmt(r.game.secs) + " · " + r.game.pain +
+          "/10 &nbsp;vs&nbsp; silence " + fmt(r.silence.secs) + " · " + r.silence.pain + "/10</td><td>" + acc(r.game.stats) + "</td></tr>";
+      }
+      return "<tr><td>" + r.when + "</td><td>Shot</td><td>pain " + r.pain + "/10</td><td>" + acc(r.stats) + "</td></tr>";
+    }).join("");
+    $("log-table").innerHTML = head + body;
+
+    var tests = rows.filter(function (r) { return r.kind === "ice"; });
+    if (tests.length >= 2) {
+      var dp = 0, ds = 0;
+      tests.forEach(function (r) { dp += r.silence.pain - r.game.pain; ds += r.game.secs - r.silence.secs; });
+      dp /= tests.length; ds /= tests.length;
+      $("log-note").textContent = "Across " + tests.length + " ice tests, the game averaged " +
+        Math.abs(dp).toFixed(1) + " points " + (dp >= 0 ? "lower" : "higher") + " pain and " +
+        Math.abs(Math.round(ds)) + " s " + (ds >= 0 ? "longer" : "shorter") + " in the water.";
+    } else {
+      $("log-note").textContent = "Game score is the share of matches you caught. Around 60–80% means it was hard enough to hold your attention.";
+    }
+  }
+
+  // ------------------------------------------------------------- wiring
+  function loop() {
+    requestAnimationFrame(loop);
+    if (tickFn) tickFn();
+  }
+
+  $("btn-left").addEventListener("click", function () { earTest(-1); });
+  $("btn-right").addEventListener("click", function () { earTest(1); });
+  $("vol").addEventListener("input", function (e) { setVolume(parseInt(e.target.value, 10)); });
+  $("vol").addEventListener("change", function () { earTest(0); });
+  $("btn-practice").addEventListener("click", startPractice);
+  $("btn-shot").addEventListener("click", startShot);
+  $("btn-ice").addEventListener("click", startIce);
+  $("r-pain").addEventListener("input", function (e) { $("r-val").textContent = e.target.value; });
+  $("btn-clear").addEventListener("click", function () {
+    try { localStorage.removeItem(LS_KEY); } catch (e) {}
+    renderLog();
   });
 
-  $("btn-start").addEventListener("click", beginRun);
-  $("btn-stop").addEventListener("click", function () { endRun(false); });
-  $("btn-now").addEventListener("click", function (e) {
-    e.stopPropagation();
-    if (S.phase !== "moment") { enterPhase("moment"); $("btn-now").disabled = true; }
-  });
-
-  $("tapzone").addEventListener("pointerdown", function (e) {
-    if (e.target.closest("button")) return;
+  // the whole screen is the answer button, so you can play with your eyes shut
+  $("play").addEventListener("pointerdown", function (e) {
+    if (e.target.closest("button") || e.target.closest("#v-rate")) return;
     tap();
   });
-
   document.addEventListener("keydown", function (e) {
-    if (!S.running) return;
+    if (!mode) return;
     if (e.code === "Space") { e.preventDefault(); tap(); }
-    if (e.key === "n" || e.key === "N") { if (S.phase !== "moment") { enterPhase("moment"); $("btn-now").disabled = true; } }
-    if (e.key === "Escape") endRun(false);
+    if (e.key === "Escape") abort();
   });
 
-  $("pn").addEventListener("input", function (e) { $("pn-val").textContent = e.target.value; });
-  $("ds").addEventListener("input", function (e) { $("ds-val").textContent = e.target.value; });
-
-  $("btn-save").addEventListener("click", function () {
-    var d = new Date();
-    var rows = readLog();
-    rows.push({
-      when: (d.getMonth() + 1) + "/" + d.getDate(),
-      mode: S.mode,
-      pain: parseInt($("pn").value, 10),
-      distraction: parseInt($("ds").value, 10),
-      hits: S.task.hits,
-      missed: S.task.misses,
-      level: Math.round(S.levelDb),
-      flutter: S.flutterHz
-    });
-    writeLog(rows);
-    $("reveal").innerHTML = 'That run was <b>' + MODES[S.mode].label + '</b>.';
-    renderLog();
-    setTimeout(function () {
-      $("panel-debrief").style.display = "none";
-      $("panel-setup").style.display = "flex";
-      setStep("setup");
-      $("panel-log").scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 1600);
-  });
-
-  $("btn-discard").addEventListener("click", function () {
-    $("panel-debrief").style.display = "none";
-    $("panel-setup").style.display = "flex";
-    setStep("setup");
-  });
-
-  $("btn-clear").addEventListener("click", function () {
-    writeLog([]);
-    renderLog();
-  });
-
-  function fitCanvas() {
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var rect = cv.getBoundingClientRect();
-    cv.width = Math.max(320, Math.floor(rect.width * dpr));
-    cv.height = Math.floor(96 * dpr);
-  }
-  window.addEventListener("resize", fitCanvas);
-  fitCanvas();
-
-  var defaultModeBtn = document.querySelector('#mode-btns button[data-mode="full"]');
-  defaultModeBtn.classList.add("btn-primary");
-  defaultModeBtn.classList.remove("btn-ghost");
-
-  $("lv-val").textContent = S.levelDb + " dB";
-  $("fl-val").textContent = S.flutterHz + " Hz";
-  $("ro-level").textContent = S.levelDb + " dB";
+  setVolume(A.volDb);
   renderLog();
-  requestAnimationFrame(tick);
+  requestAnimationFrame(loop);
 })();
 </script>
 
